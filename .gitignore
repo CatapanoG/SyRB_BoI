@@ -1,0 +1,14 @@
+# Java binaries
+/bin/
+/target/
+
+# Jupyter checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.pyc
+
+# Jupyter notebooks
+*.ipynb
+
+# PyCharm data
+*/.idea/*
