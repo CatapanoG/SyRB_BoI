@@ -10,4 +10,5 @@
 *.ipynb
 
 # PyCharm data
+.idea
 */.idea/*
