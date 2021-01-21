@@ -1,6 +1,5 @@
-# Java binaries
-/bin/
-/target/
+# Data directories
+/data/
 
 # Jupyter checkpoints
 .ipynb_checkpoints
