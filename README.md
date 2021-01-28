@@ -1,2 +1,2 @@
 # SyRB_BoI
-Bank of Italy's SyRB framework
+Bank of Italy's SyRB calibration framework

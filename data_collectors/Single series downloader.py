@@ -15,7 +15,7 @@ import sys
 print(sys.executable)
 
 
-# In[2]:
+# In[3]:
 
 
 import io
@@ -23,74 +23,156 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd # 0.23.0
+import pickle
 import requests     # 2.18.4
 
 
-# In[3]:
+# In[4]:
 
 
 # Series
-# (i = country)
+# (.. = country)
+
+all_queries = {
 
 # 1.1.1 Size of banking sector
 # (A) CBD2.Q.i.W0.67._Z._Z.A.A.A0000._X.ALL.CA._Z.LE._T.EUR # since 2014 Q4
 # (B) MNA.Q.Y.i.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.V.N # since 2014 Q4 (solo CY-ES-I6-I7-I8)
 
 # 1.1.2 CR5
-# SSI.A.i.122C.S10.X.U6.Z0Z.Z 
+'1.1.2': 'SSI.A..122C.S10.X.U6.Z0Z.Z', 
 
 # 1.1.3 HHI Herfindahl Index of banks’ assets
-# SSI.A.i.122C.H10.X.U6.Z0Z.Z
-
+'1.1.3': 'SSI.A..122C.H10.X.U6.Z0Z.Z',
+    
 # 1.1.4 Share of lending to the domestic NFPS by resident MFIs
-# (A) QSA.Q.N.i.W2.S12K.S11.N.A.LE.F4.S._Z.XDC._T.S.V.N._T (preso da Q1 2000)
-# (B) QSA.Q.N.i.W2.S12K.S1M.N.A.LE.F4.S._Z.XDC._T.S.V.N._T (preso da Q1 2000)
-# (C) QSA.Q.N.i.W2.S12K.S11.N.A.LE.F4.L._Z.XDC._T.S.V.N._T (preso da Q1 2000)
-# (D) QSA.Q.N.i.W2.S12K.S1M.N.A.LE.F4.L._Z.XDC._T.S.V.N._T (preso da Q1 2000)
-# (E) QSA.Q.N.i.W0.S11.S1.N.L.LE.F4.S._Z.XDC._T.S.V.N._T (preso da Q1 2000)
-# (F) QSA.Q.N.i.W0.S1M.S1.N.L.LE.F4.S._Z.XDC._T.S.V.N._T (preso da Q1 2000)
-# (G) QSA.Q.N.i.W0.S11.S1.N.L.LE.F4.L._Z.XDC._T.S.V.N._T (preso da Q1 2000)
-# (H) QSA.Q.N.i.W0.S1M.S1.N.L.LE.F4.L._Z.XDC._T.S.V.N._T (preso da Q1 2000)
-
-
-# In[201]:
-
-
-# Building blocks for the URL
-entrypoint = 'https://sdw-wsrest.ecb.europa.eu/service/' # Using protocol 'https'
-resource = 'data'           # The resource for data queries is always'data'
-flowRef ='SSI'              # Dataflow describing the data that needs to be returned, exchange rates in this case
-key = 'A..122C.H10.X.U6.Z0Z.Z'    # Defining the dimension values, explained below
-
-# Define the parameters
-parameters = {
-    'startPeriod': '2000-01-01',  # Start date of the time series
-    'endPeriod': '2100-10-01'     # End of the time series
+'1.1.4.A': 'QSA.Q.N..W2.S12K.S11.N.A.LE.F4.S._Z.XDC._T.S.V.N._T', # (preso da Q1 2000)
+'1.1.4.B': 'QSA.Q.N..W2.S12K.S1M.N.A.LE.F4.S._Z.XDC._T.S.V.N._T', # (preso da Q1 2000)
+'1.1.4.C': 'QSA.Q.N..W2.S12K.S11.N.A.LE.F4.L._Z.XDC._T.S.V.N._T', # (preso da Q1 2000)
+'1.1.4.D': 'QSA.Q.N..W2.S12K.S1M.N.A.LE.F4.L._Z.XDC._T.S.V.N._T', # (preso da Q1 2000)
+'1.1.4.E': 'QSA.Q.N..W0.S11.S1.N.L.LE.F4.S._Z.XDC._T.S.V.N._T', # (preso da Q1 2000)
+'1.1.4.F': 'QSA.Q.N..W0.S1M.S1.N.L.LE.F4.S._Z.XDC._T.S.V.N._T', # (preso da Q1 2000)
+'1.1.4.G': 'QSA.Q.N..W0.S11.S1.N.L.LE.F4.L._Z.XDC._T.S.V.N._T', # (preso da Q1 2000)
+'1.1.4.H': 'QSA.Q.N..W0.S1M.S1.N.L.LE.F4.L._Z.XDC._T.S.V.N._T', # (preso da Q1 2000)
+   
+# 1.3.1 CET1 ratio
+'1.3.1': 'CBD2.Q..W0.67._Z._Z.A.A.I4008._Z._Z._Z._Z._Z._Z.PC',
+    
+# 1.4.1 Credit to general governments, as share of total assets
+'1.4.1.A': 'BSI.M..N.A.A30.A.1.U6.2100.Z01.E',
+'1.4.1.B': 'BSI.M..N.A.A20.A.1.U6.2100.Z01.E',
+'1.4.1.C': 'BSI.M..N.A.T00.A.1.Z5.0000.Z01.E',
+    
+# 1.4.3 Public sector indebtedness
+'1.4.3': 'GFS.Q.N..W0.S13.S1.C.L.LE.GD.T._Z.XDC_R_B1GQ_CY._T.F.V.N._T',
+    
+# 3.2.2 Share of lending to NFPS by non-residents
+'3.2.2.A': 'QSA.Q.N..W2.S1.S11.N.A.LE.F4.S._Z.XDC._T.S.V.N._T',
+'3.2.2.B': 'QSA.Q.N..W2.S1.S1M.N.A.LE.F4.S._Z.XDC._T.S.V.N._T',
+'3.2.2.C': 'QSA.Q.N..W2.S1.S11.N.A.LE.F4.L._Z.XDC._T.S.V.N._T',
+'3.2.2.D': 'QSA.Q.N..W2.S1.S1M.N.A.LE.F4.L._Z.XDC._T.S.V.N._T',
+'3.2.2.E': 'QSA.Q.N..W0.S11.S1.N.L.LE.F4.S._Z.XDC._T.S.V.N._T',
+'3.2.2.F': 'QSA.Q.N..W0.S1M.S1.N.L.LE.F4.S._Z.XDC._T.S.V.N._T',
+'3.2.2.G': 'QSA.Q.N..W0.S11.S1.N.L.LE.F4.L._Z.XDC._T.S.V.N._T',
+'3.2.2.H': 'QSA.Q.N..W0.S1M.S1.N.L.LE.F4.L._Z.XDC._T.S.V.N._T'
+    
 }
 
-
-# In[202]:
-
-
-# Construct the URL: https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.CHF.EUR.SP00.A
-request_url = entrypoint + resource + '/'+ flowRef + '/' + key
-
-# Make the HTTP request
-response = requests.get(request_url, params=parameters, headers={'Accept': 'text/csv'})
-
-# Check if the response returns succesfully with response code 200
-print(response)
-
-# Print the full URL
-print(response.url)
+dfs = {}
 
 
-# In[203]:
+# In[5]:
 
 
-#my_data = np.genfromtxt(io.StringIO(response.text), delimiter=',')
+# MAke the HTTP request 
+def fetch_series(_key):
+    # Building blocks for the URL
+    entrypoint = 'https://sdw-wsrest.ecb.europa.eu/service/' # Using protocol 'https'
+    resource = 'data'           # The resource for data queries is always'data'
+    
+    flow_name, key_position = get_flow_name(_key) # Dataflow describing the data that needs to be returned, exchange rates in this case
+    key = _key[key_position:]    # Defining the dimension values, explained below
+    
+    # Define the parameters
+    parameters = {
+        'startPeriod': '2000-01-01',  # Start date of the time series
+        'endPeriod': '2100-10-01'     # End of the time series
+    }
+    
+    # Construct the URL, eg: https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.CHF.EUR.SP00.A
+    request_url = entrypoint + resource + '/'+ flow_name + '/' + key
 
-df = pd.read_csv(io.StringIO(response.text))
+    # Make the HTTP request
+    response = requests.get(request_url, params=parameters, headers={'Accept': 'text/csv'})
+
+    # Check if the response returns succesfully with response code 200
+    print(response)
+    
+    # Print the full URL
+    print(response.url)
+    
+    # Pandas df conversion
+    return pd.read_csv(io.StringIO(response.text))
+
+# Filter for the useful data
+def filter_series(_df):
+    
+    # Filter relevant columns
+    return _df.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE'], axis=1)
+
+# Get the data flow name from the query string
+def get_flow_name(query_string):
+    flow_name = ""
+    end_position = 0
+    
+    for char in query_string:
+        end_position += 1
+        if char != '.':
+            flow_name += char
+        else:
+            break
+            
+    return flow_name, end_position
+
+# Execute all queries and store the results in 'dfs'
+def get_all_input_data():
+    for entry in all_queries:
+        print('Indicator: ' + entry)
+        print('Series: ' + all_queries[entry])
+
+        # Fetch series from ECB
+        dfs[entry] = fetch_series(all_queries[entry])
+
+        # Filter columns
+        dfs[entry] = filter_series(dfs[entry])
+
+        print('\n')
+
+# Save the data on the disk ('../data/input_data')
+def save_all_input_data():
+    filename = '../data/input_data'
+    outfile = open(filename,'wb')
+    pickle.dump(dfs,outfile)
+    outfile.close()
+
+
+# In[6]:
+
+
+get_all_input_data()
+save_all_input_data()
+
+
+# In[31]:
+
+
+
+
+
+# In[ ]:
+
+
+# OLD STUFF FOLLOWS
 
 
 # In[204]:
