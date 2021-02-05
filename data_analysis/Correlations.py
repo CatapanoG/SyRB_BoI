@@ -1,21 +1,24 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 # 'Helps' with the autocompletion of Java variables within Jupyter
 get_ipython().run_line_magic('config', 'Completer.use_jedi = False')
 
 
-# In[3]:
+# In[38]:
 
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pickle
+import seaborn as sn
 
 
-# In[45]:
+# In[ ]:
 
 
 # Load input data
@@ -25,13 +28,7 @@ output_data = pickle.load(infile)
 infile.close()
 
 
-# In[46]:
-
-
-output_data['1.1.2']['TIME_PERIOD'][0]
-
-
-# In[48]:
+# In[ ]:
 
 
 # Dataset methods
@@ -72,33 +69,7 @@ def get_dataframe_time_freq(dataframe):
 describe_dataset(new_data_type)
 
 
-# In[47]:
-
-
-# Transform all series data into int64 of the type '201203'
-new_data_type = {}
-
-for series in output_data:
-    series_time_freq = get_dataframe_time_freq(output_data[series])
-    
-    # Filter the dataframe according to its frequency
-    if series_time_freq == 'Y':
-        new_df = output_data[series].copy()
-        new_df['TIME_PERIOD'] = new_df['TIME_PERIOD'] * 100 + 12
-    elif series_time_freq == 'Q':
-        #new_df = output_data[series][output_data[series]['TIME_PERIOD'].str.contains("Q4")]
-        new_df = output_data[series].copy()
-        new_df.loc[new_df["TIME_PERIOD"].str.contains("Q1") > 8, "B"] = "x"
-        
-    elif series_time_freq == 'M':
-        #new_df = output_data[series][output_data[series]['TIME_PERIOD'].str.contains("12")]
-        pass
-    
-    # Append the filtered dataframe
-    new_data_type[series] = new_df
-
-
-# In[31]:
+# In[ ]:
 
 
 # Reduce all series to their lowest frequency
@@ -121,21 +92,43 @@ for series in output_data:
     
 
 
-# In[12]:
+# In[22]:
 
 
 # Join all indicators (Pandas dataframes)
 joined_data = None
 
 for series in output_data:
+    # Filter out 'FREQ'
+    filtered_df = output_data[series].filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE'], axis=1)
     # First column
     if joined_data is None:
-        joined_data = output_data[series].copy()
+        joined_data = filtered_df.copy()
     # Other columns
     else:
-        joined_data = pd.merge(joined_data, output_data[series],on=['TIME_PERIOD', 'REF_AREA'],how='inner')
+        joined_data = pd.merge(joined_data, filtered_df,on=['TIME_PERIOD', 'REF_AREA'],how='inner')
     # Rename 'OBS_VALUE' for ease of computation
-    #list_141 = list_141.rename(columns={'OBS_VALUE': series})
+    joined_data = joined_data.rename(columns={'OBS_VALUE': series})
+
+
+# In[23]:
+
+
+joined_data.tail()
+
+
+# In[36]:
+
+
+corr = joined_data.corr()
+
+corr
+
+
+# In[39]:
+
+
+sn.heatmap(corr, annot=True)
 
 
 # In[ ]:

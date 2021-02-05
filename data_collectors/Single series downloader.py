@@ -81,7 +81,7 @@ all_queries = {
 dfs = {}
 
 
-# In[5]:
+# In[10]:
 
 
 # MAke the HTTP request 
@@ -118,7 +118,34 @@ def fetch_series(_key):
 def filter_series(_df):
     
     # Filter relevant columns
-    return _df.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE'], axis=1)
+    return _df.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE', 'FREQ'], axis=1)
+
+# Convert data types to int (of the type: 20201130)
+def convert_data_types(_df):
+    # Helper used to adjust quarterly data
+    def quarters(x):
+        new_date = int(x[0:4]) * 100
+        if 'Q1' in x:
+            new_date += 3
+        elif 'Q2' in x:
+            new_date += 6
+        elif 'Q3' in x:
+            new_date += 9
+        elif 'Q4' in x:
+            new_date += 12
+        return new_date
+    # Helper used to adjust monthly data
+    def months(x):
+        new_date = int(x[0:4]) * 100 + int(x[5:7])
+        return new_date
+
+    time_freq = _df['FREQ'][0]
+    if time_freq == 'A':
+        _df['TIME_PERIOD'] = _df['TIME_PERIOD'] * 100 + 12
+    elif time_freq == 'Q':
+        _df['TIME_PERIOD'] = _df['TIME_PERIOD'].map(quarters)
+    elif time_freq == 'M':
+        _df['TIME_PERIOD'] = _df['TIME_PERIOD'].map(months)
 
 # Get the data flow name from the query string
 def get_flow_name(query_string):
@@ -145,6 +172,9 @@ def get_all_input_data():
 
         # Filter columns
         dfs[entry] = filter_series(dfs[entry])
+        
+        # Convert data types
+        convert_data_types(dfs[entry])
 
         print('\n')
 
@@ -156,7 +186,7 @@ def save_all_input_data():
     outfile.close()
 
 
-# In[6]:
+# In[11]:
 
 
 get_all_input_data()
@@ -175,10 +205,10 @@ save_all_input_data()
 # OLD STUFF FOLLOWS
 
 
-# In[204]:
+# In[12]:
 
 
-df.info()
+dfs
 
 
 # In[205]:

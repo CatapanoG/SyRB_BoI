@@ -26,7 +26,7 @@ input_data = pickle.load(infile)
 infile.close()
 
 
-# In[12]:
+# In[4]:
 
 
 def print_series_names(dataset):
@@ -36,7 +36,7 @@ def print_series_names(dataset):
 print_series_names(input_data)
 
 
-# In[11]:
+# In[5]:
 
 
 # 1.1.4
@@ -50,7 +50,7 @@ for series in input_data:
             list_114 = input_data[series].copy()
         # Other columns
         else:
-            list_114 = pd.merge(list_114,input_data[series],on=['TIME_PERIOD', 'REF_AREA'],how='inner')
+            list_114 = pd.merge(list_114,input_data[series],on=['TIME_PERIOD', 'REF_AREA', 'FREQ'],how='inner')
         # Rename 'OBS_VALUE' for ease of computation
         list_114 = list_114.rename(columns={'OBS_VALUE': series})
 
@@ -58,7 +58,7 @@ for series in input_data:
 list_114['OBS_VALUE'] = (list_114['1.1.4.A'] + list_114['1.1.4.B'] + list_114['1.1.4.C'] + list_114['1.1.4.D']) / (list_114['1.1.4.E'] + list_114['1.1.4.F'] + list_114['1.1.4.G'] + list_114['1.1.4.H'])
 
 # Filter out component data
-list_114 = list_114.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE'], axis=1)
+list_114 = list_114.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE', 'FREQ'], axis=1)
 
 # Remove components from input data
 for series in list(input_data.keys()):
@@ -83,7 +83,7 @@ for series in input_data:
             list_141 = input_data[series].copy()
         # Other columns
         else:
-            list_141 = pd.merge(list_141,input_data[series],on=['TIME_PERIOD', 'REF_AREA'],how='inner')
+            list_141 = pd.merge(list_141,input_data[series],on=['TIME_PERIOD', 'REF_AREA', 'FREQ'],how='inner')
         # Rename 'OBS_VALUE' for ease of computation
         list_141 = list_141.rename(columns={'OBS_VALUE': series})
 
@@ -91,7 +91,7 @@ for series in input_data:
 list_141['OBS_VALUE'] = (list_141['1.4.1.A'] + list_141['1.4.1.B']) / list_141['1.4.1.C']
 
 # Filter out component data
-list_141 = list_141.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE'], axis=1)
+list_141 = list_141.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE', 'FREQ'], axis=1)
 
 # Remove components from input data
 for series in list(input_data.keys()):
@@ -102,7 +102,7 @@ for series in list(input_data.keys()):
 input_data['1.4.1'] = list_141
 
 
-# In[9]:
+# In[7]:
 
 
 # 3.2.2
@@ -116,7 +116,7 @@ for series in input_data:
             list_322 = input_data[series].copy()
         # Other columns
         else:
-            list_322 = pd.merge(list_322,input_data[series],on=['TIME_PERIOD', 'REF_AREA'],how='inner')
+            list_322 = pd.merge(list_322,input_data[series],on=['TIME_PERIOD', 'REF_AREA', 'FREQ'],how='inner')
         # Rename 'OBS_VALUE' for ease of computation
         list_322 = list_322.rename(columns={'OBS_VALUE': series})
 
@@ -124,7 +124,7 @@ for series in input_data:
 list_322['OBS_VALUE'] = (list_322['3.2.2.A'] + list_322['3.2.2.B'] + list_322['3.2.2.C'] + list_322['3.2.2.D']) / (list_322['3.2.2.E'] + list_322['3.2.2.F'] + list_322['3.2.2.G'] + list_322['3.2.2.H'])
 
 # Filter out component data
-list_322 = list_322.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE'], axis=1)
+list_322 = list_322.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE', 'FREQ'], axis=1)
 
 # Remove components from input data
 for series in list(input_data.keys()):
@@ -135,13 +135,13 @@ for series in list(input_data.keys()):
 input_data['3.2.2'] = list_322
 
 
-# In[16]:
+# In[8]:
 
 
 input_data['1.4.1'].tail()
 
 
-# In[13]:
+# In[9]:
 
 
 # Save the data on the disk ('../data/input_data')
@@ -152,7 +152,7 @@ def save_all_input_data():
     outfile.close()
 
 
-# In[14]:
+# In[10]:
 
 
 save_all_input_data()
