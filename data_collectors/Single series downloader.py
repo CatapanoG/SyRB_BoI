@@ -38,6 +38,8 @@ all_queries = {
 # 1.1.1 Size of banking sector
 # (A) CBD2.Q.i.W0.67._Z._Z.A.A.A0000._X.ALL.CA._Z.LE._T.EUR # since 2014 Q4
 # (B) MNA.Q.Y.i.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.V.N # since 2014 Q4 (solo CY-ES-I6-I7-I8)
+'1.1.1.A': 'CBD2.Q..W0.67._Z._Z.A.A.A0000._X.ALL.CA._Z.LE._T.EUR',
+'1.1.1.B': 'MNA.Q.Y..W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.V.N',
 
 # 1.1.2 CR5
 '1.1.2': 'SSI.A..122C.S10.X.U6.Z0Z.Z', 
@@ -57,6 +59,13 @@ all_queries = {
    
 # 1.3.1 CET1 ratio
 '1.3.1': 'CBD2.Q..W0.67._Z._Z.A.A.I4008._Z._Z._Z._Z._Z._Z.PC',
+    
+# 1.3.7 Return on equity
+'1.3.7.A': 'CBD2.Q..W0.67._Z._Z.A.A.P0000._X.ALL.CP._Z.T._T.EUR',
+'1.3.7.B': 'CBD2.Q..W0.67._Z._Z.A.A.LE000._X.ALL.CA._Z.LE._T.EUR',
+    
+# 1.3.8 Cost/income ratio
+'1.3.8': 'CBD2.Q..W0.67._Z._Z.A.A.I2100._Z._Z._Z._Z._Z._Z.PC',
     
 # 1.4.1 Credit to general governments, as share of total assets
 '1.4.1.A': 'BSI.M..N.A.A30.A.1.U6.2100.Z01.E',
@@ -81,7 +90,7 @@ all_queries = {
 dfs = {}
 
 
-# In[10]:
+# In[5]:
 
 
 # MAke the HTTP request 
@@ -186,133 +195,17 @@ def save_all_input_data():
     outfile.close()
 
 
-# In[11]:
+# In[6]:
 
 
 get_all_input_data()
 save_all_input_data()
 
 
-# In[31]:
-
-
-
-
-
 # In[ ]:
 
 
 # OLD STUFF FOLLOWS
-
-
-# In[12]:
-
-
-dfs
-
-
-# In[205]:
-
-
-df.tail()
-
-
-# In[206]:
-
-
-# change
-df_filtered = df.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE'], axis=1)
-
-countries = df.REF_AREA.unique()
-print(countries)
-
-# change
-data = []
-
-for country in countries:
-    # change, change
-    ts = df_filtered.loc[(df_filtered['REF_AREA'] == country)].to_numpy()
-    # change
-    data.append(ts)
-    
-# change, change
-data = np.asarray(data)
-    
-# change
-for ts in data:
-    if(ts[0,1] == 'IT' or ts[0,1] == 'DE' or ts[0,1] == 'FR'):
-        plt.plot(ts[:,0],ts[:,2],label=ts[0,1])
-
-plt.legend()
-
-
-# In[166]:
-
-
-#data
-
-
-# In[207]:
-
-
-# file name
-name = '113'
-
-# save csv
-df_filtered.to_csv('data/' + name + '.csv',index=False)
-
-# save numpy
-np.save('data/' + name + '.npy', data, allow_pickle=True)
-
-
-# In[208]:
-
-
-test = np.load('data/' + name + '.npy', allow_pickle=True)
-
-test
-
-
-# In[43]:
-
-
-# Create a new DataFrame called 'ts'
-ts = df.filter(['TIME_PERIOD', 'REF_AREA', 'OBS_VALUE'], axis=1)
-# 'TIME_PERIOD' was of type 'object' (as seen in df.info). Convert it to datetime first
-#ts['TIME_PERIOD'] = pd.to_datetime(ts['TIME_PERIOD'])
-# Set 'TIME_PERIOD' to be the index
-#ts = ts.set_index('TIME_PERIOD')
-# Print the last 5 rows to screen
-ts.tail()
-
-
-# In[20]:
-
-
-# Convert to numpy
-np_ts = ts.to_numpy()
-
-
-# In[21]:
-
-
-np_ts
-
-
-# In[76]:
-
-
-
-
-
-# In[78]:
-
-
-
-
-plt.plot(np_ts_ITA[:,0], np_ts_ITA[:,1], label='CR5 ITA')
-plt.plot(np_ts_DE[:,0], np_ts_DE[:,1], label='CR5 DEU')
-plt.legend()
 
 
 # In[ ]:
